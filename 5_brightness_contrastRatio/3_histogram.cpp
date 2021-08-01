@@ -39,40 +39,46 @@ Mat calcGrayHist(const Mat& img)
     // calcHist()룰 써서 img영상의 히스토그램을 구하고 결과를 hist변수에 저장합니다.
 	calcHist(&img, 1, channels, noArray(), hist, dims, histSize, ranges);
     // hist 변환
+	// hist 는 CV_32FC1타입을 갖는 256*1크기의 행렬
 	return hist;
 }
-
+// calc에서 구한 hist를 막대그래프 형태로 나타내는 함수
+// 최대빈도수를 표현하는 막대그래프길이가 100픽셀이 되도록 그래프를 그림
 Mat getGrayHistImage(const Mat& hist)
 {
+	// hist행렬이 CV_32FC1인지 256개의 빈인지 체크합니다.
 	CV_Assert(hist.type() == CV_32FC1);
 	CV_Assert(hist.size() == Size(1, 256));
-
+	// hist행렬 원소의 최댓값을 histMax변수에 저장합니다.
 	double histMax;
 	minMaxLoc(hist, 0, &histMax);
-
+	// 흰색으로 초기화된 256*100크기의 새 영상 imgHist를 생성합니다.
 	Mat imgHist(100, 256, CV_8UC1, Scalar(255));
+	// for과 line()을 이용하여 각각의 빈에 대한 히스토그램 그래프를 그립니다.
 	for (int i = 0; i < 256; i++) {
+		// 최댓값을 100픽셀으로 설정하고 나머지 막대그래프는 100픽셀보다 짧은길이의 직선이 됩니다.
 		line(imgHist, Point(i, 100),
 			Point(i, 100 - cvRound(hist.at<float>(i, 0) * 100 / histMax)), Scalar(0));
 	}
-
+	// hist행렬로투터 구한 256*100 크기의 히스토그램 영상 imgHist를 반환합니다.
 	return imgHist;
 }
 
 void histogram_stretching()
 {
+	// hawkes.bmp파일을 그레이스케일 형식으로 불러와서 Mat형식 src에 저장합니다.
 	Mat src = imread("hawkes.bmp", IMREAD_GRAYSCALE);
-
+	// 예외처리
 	if (src.empty()) {
 		cerr << "Image load failed!" << endl;
 		return;
 	}
-
+	// 입력 영상 src에서 그레이스케일 최솟값과 최댓값을 구하여 gmin과 gmax에 저장합니다.
 	double gmin, gmax;
 	minMaxLoc(src, &gmin, &gmax);
-
+	// 히스토그램 수식을 그대로 적용하여 결과 영상 dst를 생성합니다.
 	Mat dst = (src - gmin) * 255 / (gmax - gmin);
-
+	// 입력 영상과 히스토그램 스트레칭 결과영상, 그리고 각각의 히스토그램을 화면에 출력합니다.
 	imshow("src", src);
 	imshow("srcHist", getGrayHistImage(calcGrayHist(src)));
 
@@ -85,16 +91,17 @@ void histogram_stretching()
 
 void histogram_equalization()
 {
+	// hawkes.bmp를 그레이스케일 형태로 불러와서 src에 저장합니다.
 	Mat src = imread("hawkes.bmp", IMREAD_GRAYSCALE);
-
+	// 예외처리
 	if (src.empty()) {
 		cerr << "Image load failed!" << endl;
 		return;
 	}
-
+	// 히스토그램 평활화를 수행한 결과를 dst에 저장합니다.
 	Mat dst;
 	equalizeHist(src, dst);
-
+	// 입력영상과 히스토그램 평활화 결과 영상, 그리고 각각의 히스토그램을 화면에 출력합니다.
 	imshow("src", src);
 	imshow("srcHist", getGrayHistImage(calcGrayHist(src)));
 

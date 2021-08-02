@@ -99,13 +99,16 @@ void color_grayscale()
 
 void color_split()
 {
+	// candies영상을 3채널 컬러로 불러옵니다. 
 	Mat src = imread("candies.png");
 
 	if (src.empty()) {
 		cerr << "Image load failed!" << endl;
 		return;
 	}
-
+	// src영상의 채널을 분할하여 bgr_planes벡터에 저장합니다.
+	// bgr_plane[0]에는 파란색 색상 평면, bgr_plane[1]에는 녹색 색상 평면
+	// bgr_plane[2]에는 빨간색 색상 평면이 저장됩니다.
 	vector<Mat> bgr_planes;
 	split(src, bgr_planes);
 
